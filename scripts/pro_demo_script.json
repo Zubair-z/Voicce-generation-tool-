@@ -1,0 +1,45 @@
+{
+    "script_metadata": {
+        "total_scenes": 6,
+        "project_name": "pro_demo_video",
+        "description": "A demo showcasing multiple natural voices and accents"
+    },
+    "scenes": [
+        {
+            "id": 1,
+            "character": "youtuber",
+            "text": "Yo! What is up everyone? Today we are testing the most insane AI voice tool ever built. Just listen to these voices!",
+            "output_file": "scene_1.wav"
+        },
+        {
+            "id": 2,
+            "character": "expert",
+            "text": "Actually, the neural engine behind this technology uses advanced linguistic patterns to mimic human emotion and rhythm quite accurately.",
+            "output_file": "scene_2.wav"
+        },
+        {
+            "id": 3,
+            "character": "villain",
+            "text": "Emotion? Rhythm? They are nothing but data points in my grand design to replace every human voice on Earth!",
+            "output_file": "scene_3.wav"
+        },
+        {
+            "id": 4,
+            "character": "urdu_male",
+            "text": "بھائی، یہ آوازیں تو بالکل اصلی انسانوں جیسی لگ رہی ہیں۔ کمال کر دیا آپ نے!",
+            "output_file": "scene_4.wav"
+        },
+        {
+            "id": 5,
+            "character": "british_female",
+            "text": "I must say, even the accents are rather smashing. It sounds exactly like a crisp morning in London, doesn't it?",
+            "output_file": "scene_5.wav"
+        },
+        {
+            "id": 6,
+            "character": "child",
+            "text": "Pick me! Pick me! I want to be in the video too! This is so much fun, look at all the pretty voices!",
+            "output_file": "scene_6.wav"
+        }
+    ]
+}

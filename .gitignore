@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.wav
+*.mp3
+scripts/audio_output/
+scripts/*.json
+!scripts/pro_demo_script.json
+temp_previews/
+.vscode/
+.idea/
+*.log
+generation_summary.json
+*.bat
+pyproject.toml
+uv.lock

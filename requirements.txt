@@ -1,0 +1,24 @@
+# ====================================================
+# SUPER VOICE TOOL — Python Dependencies
+# ====================================================
+# PREFERRED (uv — faster):
+#   uv sync
+#
+# Fallback (pip):
+#   pip install -r requirements.txt
+# ====================================================
+
+# --- Option 1: Offline TTS (No internet needed) ---
+# Works without internet. Uses system voices.
+pyttsx3>=2.90
+
+# --- Option 2: Online TTS (Requires internet) ---
+# Better voice quality, multiple accents.
+gTTS>=2.3.2
+
+# --- Optional: MP3 to WAV converter ---
+# Needed for gTTS → WAV conversion
+# Also requires ffmpeg installed on your system:
+#   Windows: https://ffmpeg.org/download.html
+#   OR: choco install ffmpeg
+pydub>=0.25.1

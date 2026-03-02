@@ -1,0 +1,40 @@
+{
+  "script_metadata": {
+    "total_scenes": 5,
+    "project_name": "auto_vid_01",
+    "created_at": "2026-03-03",
+    "description": "A dramatic 5-scene story with multiple characters"
+  },
+  "scenes": [
+    {
+      "id": 1,
+      "character": "narrator",
+      "text": "In a world consumed by darkness, only one warrior dared to stand against the tide of evil. This is his story.",
+      "output_file": "scene_1.wav"
+    },
+    {
+      "id": 2,
+      "character": "hero",
+      "text": "I have trained my entire life for this moment. No matter what stands before me, I will protect the innocent and defeat the forces of darkness!",
+      "output_file": "scene_2.wav"
+    },
+    {
+      "id": 3,
+      "character": "villain",
+      "text": "You foolish child. You think your courage means anything here? This kingdom belongs to me now. Surrender, or face your destruction.",
+      "output_file": "scene_3.wav"
+    },
+    {
+      "id": 4,
+      "character": "queen",
+      "text": "Hero, our people believe in you. The ancient prophecy speaks of a warrior with a heart of gold. Today, you fulfill that destiny. Fight well.",
+      "output_file": "scene_4.wav"
+    },
+    {
+      "id": 5,
+      "character": "child",
+      "text": "Wow! Did you see that? He actually did it! The hero won! Now everyone is safe and we can go home. I knew he would win, I just knew it!",
+      "output_file": "scene_5.wav"
+    }
+  ]
+}
