@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-ZAS Vocalize v4.0 — Ultra-Premium Edition
-Redesigned with a high-end SaaS/DAW aesthetic.
+ZAS Vocalize v5.0 — Ultimate Edition
+The Pinnacle of AI Voice Generation.
+Features: Glassmorphism, Sidebar Navigation, Mixer Cards.
 """
 
 import sys, io, os, json, threading, asyncio, subprocess
@@ -12,15 +13,20 @@ from tkinter import filedialog, messagebox
 import tkinter as tk
 import winsound
 
-# ── Colors & Branding ─────────────────────────────────────────────────────────
-BG_MAIN     = "#0B0E14"  # Very deep slate/black
-BG_PANEL    = "#151921"  # Slightly lighter panel
-BG_CARD     = "#1C222D"  # Card background
-ACCENT_BLUE = "#3B82F6"  # Premium Blue
-ACCENT_CYAN = "#06B6D4"  # Tech Cyan
-TEXT_DIM    = "#94A3B8"  # Dimmed text
-TEXT_BRIGHT = "#F8FAFC"  # High contrast text
-BORDER_COLOR = "#2A3341" # Subtle border
+# ── Design System: Ultimate Edition ──────────────────────────────────────────
+# Palettes
+CLR_BG          = "#08090D"  # Pitch Black/Deep Space
+CLR_SIDEBAR     = "#0F111A"  # Deep Sidebar
+CLR_CARD        = "#141721"  # Card Surface
+CLR_CARD_HOVER  = "#1C2030"  # Card Hover
+CLR_BORDER      = "#222736"  # Subtle Border
+CLR_GLOW        = "#3B82F6"  # Neon Blue
+CLR_ACCENT_1    = "#8B5CF6"  # Electric Violet
+CLR_ACCENT_2    = "#06B6D4"  # Cyan Glow
+
+TEXT_MAIN       = "#F8FAFC"
+TEXT_DIM        = "#64748B"
+TEXT_SUB        = "#94A3B8"
 
 # ── Fix Windows encoding ──────────────────────────────────────────────────────
 if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
@@ -28,111 +34,111 @@ if sys.stdout.encoding and sys.stdout.encoding.lower() != "utf-8":
 
 ctk.set_appearance_mode("dark")
 
-# ── Voice Configuration ───────────────────────────────────────────────────────
+# ── Voice Configuration (Full Set) ────────────────────────────────────────────
 CHARACTERS = {
-    # YouTuber / Creator
-    "youtuber":          {"color": "#F5A623", "pill_bg": "#2e2010", "desc": "Casual American YouTuber ⭐"},
-    "youtuber_female":   {"color": "#FF9ED2", "pill_bg": "#2e1020", "desc": "Warm American vlogger ⭐"},
-    # Narrator
-    "narrator":          {"color": "#60A5FA", "pill_bg": "#1e293b", "desc": "British — Documentary"},
-    "narrator_female":   {"color": "#93C5FD", "pill_bg": "#1e293b", "desc": "American — Audiobook"},
-    "narrator_deep":     {"color": "#3B82F6", "pill_bg": "#0f172a", "desc": "Deep — Movie Trailer"},
-    # Expert
-    "expert":            {"color": "#10B981", "pill_bg": "#064e3b", "desc": "Podcast & Explainer"},
-    "professor":         {"color": "#059669", "pill_bg": "#064e3b", "desc": "Academic & Lecture"},
-    "expert_female":     {"color": "#34D399", "pill_bg": "#064e3b", "desc": "News & Corporate"},
+    # Premium AI
+    "youtuber":          {"color": CLR_ACCENT_2, "icon": "🎥", "desc": "Casual American Male YouTubing"},
+    "youtuber_female":   {"color": "#F472B6", "icon": "🎙️", "desc": "Warm American Female Vlogger"},
+    # Narrators
+    "narrator":          {"color": CLR_GLOW,     "icon": "📖", "desc": "British Male - Documentary"},
+    "narrator_female":   {"color": "#60A5FA", "icon": "📚", "desc": "American Female - Audiobook"},
+    "narrator_deep":     {"color": "#2563EB", "icon": "🎬", "desc": "Deep Voice - Movie Trailers"},
+    # Experts
+    "expert":            {"color": "#10B981", "icon": "🧠", "desc": "Confident Podcast/Tutorial"},
+    "professor":         {"color": "#059669", "icon": "🎓", "desc": "Measured Academic Lecture"},
+    "expert_female":     {"color": "#34D399", "icon": "📢", "desc": "News & Corporate Female"},
     # Characters
-    "hero":              {"color": "#22C55E", "pill_bg": "#052e16", "desc": "Bold Action Hero"},
-    "villain":           {"color": "#EF4444", "pill_bg": "#450a0a", "desc": "Deep Menacing Villain"},
-    "queen":             {"color": "#A855F7", "pill_bg": "#2e1065", "desc": "Regal Authority"},
-    "child":             {"color": "#F97316", "pill_bg": "#431407", "desc": "Bright Young Child"},
-    "old_man":           {"color": "#D97706", "pill_bg": "#451a03", "desc": "Wise Elder Mentor"},
+    "hero":              {"color": "#22C55E", "icon": "🛡️", "desc": "Bold Energetic Hero"},
+    "villain":           {"color": "#EF4444", "icon": "😈", "desc": "Deep Menacing Villain"},
+    "queen":             {"color": CLR_ACCENT_1, "icon": "👑", "desc": "Regal British Authority"},
+    "child":             {"color": "#F97316", "icon": "🎈", "desc": "Bright Young Child"},
+    "old_man":           {"color": "#D97706", "icon": "👴", "desc": "Wise Elder Mentor"},
     # Urdu / Hindi
-    "urdu_male":         {"color": "#22C55E", "pill_bg": "#052e16", "desc": "Urdu Male (Asad) 🇵🇰"},
-    "urdu_female":       {"color": "#10B981", "pill_bg": "#052e16", "desc": "Urdu Female (Uzma) 🇵🇰"},
-    "hindi_male":        {"color": "#F97316", "pill_bg": "#431407", "desc": "Hindi Male (Madhur) 🇮🇳"},
-    "hindi_female":      {"color": "#FB923C", "pill_bg": "#431407", "desc": "Hindi Female (Swara) 🇮🇳"},
-    # Regional
-    "british_male":      {"color": "#94A3B8", "pill_bg": "#334155", "desc": "Casual British"},
-    "british_female":    {"color": "#CBD5E1", "pill_bg": "#334155", "desc": "Friendly British"},
-    "australian_male":   {"color": "#4ADE80", "pill_bg": "#064e3b", "desc": "Relaxed Australian"},
-    "indian_male":       {"color": "#FBBF24", "pill_bg": "#451a03", "desc": "Indian English"},
+    "urdu_male":         {"color": "#10B981", "icon": "🇵🇰", "desc": "Natural Urdu Male (Asad)"},
+    "urdu_female":       {"color": "#34D399", "icon": "🇵🇰", "desc": "Natural Urdu Female (Uzma)"},
+    "hindi_male":        {"color": "#F97316", "icon": "🇮🇳", "desc": "Natural Hindi Male (Madhur)"},
+    "hindi_female":      {"color": "#FB923C", "icon": "🇮🇳", "desc": "Natural Hindi Female (Swara)"},
     # Moods
-    "cheerful":          {"color": "#FACC15", "pill_bg": "#422006", "desc": "Upbeat Positive"},
-    "serious":           {"color": "#64748B", "pill_bg": "#1e293b", "desc": "Formal Elegant"},
-    "excited":           {"color": "#F87171", "pill_bg": "#450a0a", "desc": "Hype & Energy"},
+    "cheerful":          {"color": "#FACC15", "icon": "😊", "desc": "Upbeat Positive Energy"},
+    "serious":           {"color": "#64748B", "icon": "😐", "desc": "Formal Elegant Tone"},
+    "excited":           {"color": "#F87171", "icon": "🔥", "desc": "Hype & High Energy"},
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
-class SceneCard(ctk.CTkFrame):
-    """Premium scene editor card."""
+class UltimateSceneCard(ctk.CTkFrame):
+    """Ultimate Mixer-style Scene Card."""
 
     def __init__(self, master, scene_id: int, on_delete, **kwargs):
-        super().__init__(master, fg_color=BG_CARD, border_color=BORDER_COLOR, border_width=1, corner_radius=12, **kwargs)
-        self.scene_id  = scene_id
+        super().__init__(master, fg_color=CLR_CARD, border_color=CLR_BORDER, border_width=1, corner_radius=15, **kwargs)
+        self.scene_id = scene_id
         self.on_delete = on_delete
         self.output_path = None
 
-        self.grid_columnconfigure(2, weight=1)
+        self.grid_columnconfigure(1, weight=1)
 
-        # ── Left: Row ID ──────────────────────────────────────────────────────
-        self.id_label = ctk.CTkLabel(
-            self, text=f"{scene_id:02d}",
-            font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
-            text_color="#475569", width=40
+        # ── Mixer ID Strip ────────────────────────────────────────────────────
+        self.id_strip = ctk.CTkFrame(self, width=6, fg_color=CLR_BORDER, corner_radius=0)
+        self.id_strip.grid(row=0, column=0, rowspan=2, sticky="ns", padx=(0, 10))
+
+        # ── Header: Scene Info ────────────────────────────────────────────────
+        header = ctk.CTkFrame(self, fg_color="transparent")
+        header.grid(row=0, column=1, columnspan=2, sticky="ew", padx=10, pady=(10, 0))
+        
+        self.title_label = ctk.CTkLabel(
+            header, text=f"SCENE {scene_id:02d}",
+            font=ctk.CTkFont(family="Inter", size=10, weight="bold"),
+            text_color=TEXT_DIM
         )
-        self.id_label.grid(row=0, column=0, padx=(12, 4), pady=16)
+        self.title_label.pack(side="left")
 
-        # ── Middle-Left: Character Select ─────────────────────────────────────
         self.char_var = ctk.StringVar(value="narrator")
         self.char_drop = ctk.CTkOptionMenu(
-            self, values=list(CHARACTERS.keys()), variable=self.char_var,
-            width=160, height=36, corner_radius=8,
-            fg_color="#1F2937", button_color="#374151", button_hover_color="#4B5563",
-            font=ctk.CTkFont(size=12, weight="normal"), dropdown_fg_color="#1F2937"
+            header, values=list(CHARACTERS.keys()), variable=self.char_var,
+            width=140, height=24, corner_radius=6,
+            fg_color=CLR_SIDEBAR, button_color=CLR_BORDER,
+            font=ctk.CTkFont(size=11), dropdown_fg_color=CLR_SIDEBAR
         )
-        self.char_drop.grid(row=0, column=1, padx=8, pady=16)
+        self.char_drop.pack(side="right")
 
-        # ── Middle: Content Input ─────────────────────────────────────────────
+        # ── Body: Text Area ───────────────────────────────────────────────────
         self.text_box = ctk.CTkTextbox(
-            self, height=72, corner_radius=10,
-            fg_color=BG_PANEL, border_color="#334155", border_width=1,
-            text_color=TEXT_BRIGHT, font=ctk.CTkFont(size=13, family="Inter"),
-            wrap="word", undo=True
+            self, height=80, corner_radius=12,
+            fg_color=CLR_SIDEBAR, border_color=CLR_BORDER, border_width=1,
+            text_color=TEXT_MAIN, font=ctk.CTkFont(size=13, family="Inter"),
+            wrap="word", padx=10, pady=10
         )
-        self.text_box.grid(row=0, column=2, padx=8, pady=12, sticky="ew")
+        self.text_box.grid(row=1, column=1, sticky="ew", padx=10, pady=10)
 
-        # ── Right: Tool Actions ───────────────────────────────────────────────
-        actions = ctk.CTkFrame(self, fg_color="transparent")
-        actions.grid(row=0, column=3, padx=(8, 12), pady=16)
+        # ── Right Controls: Audio & Actions ──────────────────────────────────
+        controls = ctk.CTkFrame(self, fg_color="transparent")
+        controls.grid(row=1, column=2, padx=12, pady=10)
 
         self.play_btn = ctk.CTkButton(
-            actions, text="▶", width=36, height=36, corner_radius=18,
-            fg_color="#334155", hover_color=ACCENT_BLUE, text_color="white",
-            state="disabled", font=ctk.CTkFont(size=16),
+            controls, text="⏵", width=38, height=38, corner_radius=19,
+            fg_color=CLR_BORDER, hover_color=CLR_GLOW, text_color="white",
+            state="disabled", font=ctk.CTkFont(size=18),
             command=self._play_audio
         )
-        self.play_btn.pack(side="left", padx=4)
+        self.play_btn.pack(pady=4)
 
         self.del_btn = ctk.CTkButton(
-            actions, text="✕", width=36, height=36, corner_radius=18,
-            fg_color="transparent", hover_color="#EF4444", text_color="#94A3B8",
+            controls, text="✕", width=38, height=38, corner_radius=19,
+            fg_color="transparent", hover_color="#EF4444", text_color=TEXT_DIM,
             font=ctk.CTkFont(size=14),
             command=lambda: on_delete(self)
         )
-        self.del_btn.pack(side="left", padx=4)
-
-        # Status Dot
-        self.dot = tk.Canvas(actions, width=8, height=8, bg=BG_CARD, highlightthickness=0)
-        self.dot.pack(side="left", padx=(8, 4))
-        self.dot_circle = self.dot.create_oval(1, 1, 7, 7, fill="#334155", outline="")
+        self.del_btn.pack(pady=4)
 
     def _play_audio(self):
         if self.output_path and os.path.exists(self.output_path):
-            try:
-                winsound.PlaySound(self.output_path, winsound.SND_FILENAME | winsound.SND_ASYNC)
-            except:
-                os.startfile(self.output_path)
+            winsound.PlaySound(self.output_path, winsound.SND_FILENAME | winsound.SND_ASYNC)
+
+    def set_status(self, status: str, path: str = None):
+        colors = {"generating": CLR_ACCENT_2, "done": "#22C55E", "failed": "#EF4444", "": CLR_BORDER}
+        self.id_strip.configure(fg_color=colors.get(status, CLR_BORDER))
+        if status == "done" and path:
+            self.output_path = str(Path(path).absolute())
+            self.play_btn.configure(state="normal", fg_color="#22C55E")
 
     def get_data(self):
         return {
@@ -142,206 +148,173 @@ class SceneCard(ctk.CTkFrame):
             "output_file": f"scene_{self.scene_id}.wav"
         }
 
-    def set_status(self, status: str, path: str = None):
-        colors = {"generating": ACCENT_CYAN, "done": "#22C55E", "failed": "#EF4444", "": "#334155"}
-        self.dot.itemconfig(self.dot_circle, fill=colors.get(status, "#334155"))
-        if status == "done" and path:
-            # Ensure path uses backslashes for Windows winsound if needed
-            self.output_path = str(Path(path).absolute())
-            self.play_btn.configure(state="normal", fg_color="#22C55E")
-
 # ══════════════════════════════════════════════════════════════════════════════
-class PremiumVoiceApp(ctk.CTk):
+class UltimateVocalizeApp(ctk.CTk):
 
     def __init__(self):
         super().__init__()
-        self.title("ZAS Vocalize — Studio Professional")
-        self.geometry("1200x900")
-        self.minsize(1050, 750)
-        self.configure(fg_color=BG_MAIN)
+        self.title("ZAS Vocalize v5.0 — Ultimate Edition")
+        self.geometry("1280x850")
+        self.minsize(1100, 750)
+        self.configure(fg_color=CLR_BG)
 
-        self.scene_rows: list[SceneCard] = []
+        self.scene_rows: list[UltimateSceneCard] = []
         self.current_project = "untitled_project"
-        self._build_ui()
+        self._build_sidebar()
+        self._build_main_area()
 
-    def _build_ui(self):
-        # ── Header Bar ────────────────────────────────────────────────────────
-        header = ctk.CTkFrame(self, fg_color=BG_PANEL, corner_radius=0, height=80)
-        header.pack(fill="x")
-        header.pack_propagate(False)
+    def _build_sidebar(self):
+        # ── Sidebar Container ────────────────────────────────────────────────
+        self.sidebar = ctk.CTkFrame(self, width=280, fg_color=CLR_SIDEBAR, corner_radius=0)
+        self.sidebar.pack(side="left", fill="y")
+        self.sidebar.pack_propagate(False)
 
-        # Logo/Title
-        title_frame = ctk.CTkFrame(header, fg_color="transparent")
-        title_frame.pack(side="left", padx=32)
-
-        ctk.CTkLabel(
-            title_frame, text="ZAS",
-            font=ctk.CTkFont(family="Inter", size=22, weight="bold"),
-            text_color=ACCENT_BLUE
-        ).pack(side="left")
+        # Brand Space
+        brand = ctk.CTkFrame(self.sidebar, fg_color="transparent")
+        brand.pack(fill="x", pady=40, padx=30)
         
         ctk.CTkLabel(
-            title_frame, text="VOCALIZE 4.0",
-            font=ctk.CTkFont(family="Inter", size=14, weight="bold"),
-            text_color=TEXT_DIM
-        ).pack(side="left", padx=(10, 0), pady=(4, 0))
+            brand, text="ZAS", 
+            font=ctk.CTkFont(family="Inter", size=28, weight="bold"),
+            text_color=CLR_GLOW
+        ).pack(side="left")
+        ctk.CTkLabel(
+            brand, text="Vocalize", 
+            font=ctk.CTkFont(family="Inter", size=24),
+            text_color=TEXT_MAIN
+        ).pack(side="left", padx=5)
 
-        # AI Generator Integrated
-        ai_bar = ctk.CTkFrame(header, fg_color=BG_CARD, corner_radius=20, border_color=BORDER_COLOR, border_width=1)
-        ai_bar.pack(side="right", padx=32, pady=14)
-
-        ctk.CTkLabel(ai_bar, text="🪄", font=ctk.CTkFont(size=18)).pack(side="left", padx=(16, 4))
+        # AI Generator Section
+        ctk.CTkLabel(self.sidebar, text="AI MAGIC GENERATOR", font=ctk.CTkFont(size=10, weight="bold"), text_color=TEXT_DIM).pack(anchor="w", padx=30, pady=(20, 10))
         
         self.ai_input = ctk.CTkEntry(
-            ai_bar, placeholder_text="Enter topic for AI Script...",
-            width=300, height=36, corner_radius=18,
-            fg_color="transparent", border_width=0, font=ctk.CTkFont(size=13)
+            self.sidebar, placeholder_text="Describe your story...",
+            height=40, corner_radius=10, fg_color=CLR_BG, border_color=CLR_BORDER,
+            font=ctk.CTkFont(size=12)
         )
-        self.ai_input.pack(side="left", padx=4)
+        self.ai_input.pack(fill="x", padx=30, pady=5)
 
         self.ai_model = ctk.CTkOptionMenu(
-            ai_bar, values=["llama3", "qwen3:4b"], width=100, height=30,
-            fg_color=BG_PANEL, button_color="#374151", corner_radius=12
+            self.sidebar, values=["llama3", "qwen3:4b"], height=36, corner_radius=10,
+            fg_color=CLR_BG, button_color=CLR_BORDER
         )
-        self.ai_model.pack(side="left", padx=8)
+        self.ai_model.pack(fill="x", padx=30, pady=5)
 
         self.ai_btn = ctk.CTkButton(
-            ai_bar, text="Generate", width=90, height=30, corner_radius=15,
-            fg_color=ACCENT_BLUE, hover_color="#2563EB", text_color="white",
-            font=ctk.CTkFont(size=12, weight="bold"),
+            self.sidebar, text="✨ Generate Script", height=44, corner_radius=12,
+            fg_color=CLR_ACCENT_1, hover_color="#7C3AED", font=ctk.CTkFont(size=13, weight="bold"),
             command=self._generate_ai_script
         )
-        self.ai_btn.pack(side="left", padx=(4, 12))
+        self.ai_btn.pack(fill="x", padx=30, pady=(15, 30))
 
-        # ── Sidebar-less Layout (Modern Flow) ─────────────────────────────────
-        main = ctk.CTkFrame(self, fg_color="transparent")
-        main.pack(fill="both", expand=True, padx=40, pady=24)
-        main.grid_columnconfigure(0, weight=1)
-
-        # ── Section 1: Voice Marketplace (Gallery) ───────────────────────────
-        gallery_header = ctk.CTkFrame(main, fg_color="transparent")
-        gallery_header.grid(row=0, column=0, sticky="ew", pady=(0, 12))
+        # Project Stats
+        stats = ctk.CTkFrame(self.sidebar, fg_color=CLR_BG, corner_radius=15, border_width=1, border_color=CLR_BORDER)
+        stats.pack(fill="x", padx=30, pady=20)
         
-        ctk.CTkLabel(
-            gallery_header, text="VOICE MARKETPLACE",
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
-            text_color=TEXT_DIM
-        ).pack(side="left")
+        ctk.CTkLabel(stats, text="Project Status", font=ctk.CTkFont(size=11, weight="bold")).pack(pady=(12, 5))
+        self.stat_scenes = ctk.CTkLabel(stats, text="0 Scenes", font=ctk.CTkFont(size=14, weight="bold"), text_color=TEXT_SUB)
+        self.stat_scenes.pack()
+        
+        self.progress_bar = ctk.CTkProgressBar(stats, width=180, height=6, fg_color=CLR_SIDEBAR, progress_color=CLR_ACCENT_2)
+        self.progress_bar.pack(pady=15)
+        self.progress_bar.set(0)
 
-        self.voice_scroll = ctk.CTkScrollableFrame(
-            main, height=110, fg_color=BG_PANEL, corner_radius=16,
-            border_color=BORDER_COLOR, border_width=1, orientation="horizontal"
+        # Footer version
+        ctk.CTkLabel(self.sidebar, text="v5.0 Ultimate Powered by Ollama", font=ctk.CTkFont(size=10), text_color=TEXT_DIM).pack(side="bottom", pady=20)
+
+    def _build_main_area(self):
+        # ── Main Container ───────────────────────────────────────────────────
+        self.main = ctk.CTkFrame(self, fg_color="transparent")
+        self.main.pack(side="right", fill="both", expand=True, padx=40, pady=40)
+
+        # Top Bar: Project Settings & Gallery
+        top_bar = ctk.CTkFrame(self.main, fg_color="transparent")
+        top_bar.pack(fill="x", pady=(0, 20))
+
+        # Project Name
+        proj_frame = ctk.CTkFrame(top_bar, fg_color="transparent")
+        proj_frame.pack(side="left")
+        ctk.CTkLabel(proj_frame, text="PROJECT NAME", font=ctk.CTkFont(size=10, weight="bold"), text_color=TEXT_DIM).pack(anchor="w")
+        self.proj_entry = ctk.CTkEntry(
+            proj_frame, width=250, height=44, corner_radius=12,
+            fg_color=CLR_SIDEBAR, border_color=CLR_BORDER, border_width=1,
+            font=ctk.CTkFont(size=15, weight="bold")
         )
-        self.voice_scroll.grid(row=1, column=0, sticky="ew", pady=(0, 24))
+        self.proj_entry.pack(anchor="w", pady=5)
+        self.proj_entry.insert(0, "viral_project_v5")
 
+        # Voice Marketplace
+        self.voice_scroll = ctk.CTkScrollableFrame(
+            self.main, height=120, fg_color=CLR_SIDEBAR, corner_radius=20,
+            border_color=CLR_BORDER, border_width=1, orientation="horizontal"
+        )
+        self.voice_scroll.pack(fill="x", pady=(0, 30))
+        
         for name, cfg in CHARACTERS.items():
             self._add_gallery_item(name, cfg)
 
-        # ── Section 2: Editor ────────────────────────────────────────────────
-        editor_header = ctk.CTkFrame(main, fg_color="transparent")
-        editor_header.grid(row=2, column=0, sticky="ew", pady=(0, 12))
+        # Editor Area
+        editor_ctrl = ctk.CTkFrame(self.main, fg_color="transparent")
+        editor_ctrl.pack(fill="x", pady=(0, 15))
         
-        ctk.CTkLabel(
-            editor_header, text="SCRIPT EDITOR",
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
-            text_color=TEXT_DIM
-        ).pack(side="left")
-
+        ctk.CTkLabel(editor_ctrl, text="TIMELINE EDITOR", font=ctk.CTkFont(size=12, weight="bold"), text_color=TEXT_DIM).pack(side="left")
+        
         ctk.CTkButton(
-            editor_header, text="+ NEW SCENE", width=120, height=32, corner_radius=8,
-            fg_color="#334155", hover_color="#475569", font=ctk.CTkFont(size=11, weight="bold"),
+            editor_ctrl, text="+ Add Scene", width=110, height=32, corner_radius=8,
+            fg_color=CLR_SIDEBAR, hover_color=CLR_CARD_HOVER, border_width=1, border_color=CLR_BORDER,
             command=self._add_scene
         ).pack(side="right")
 
-        # Scene List
-        self.scene_scroll = ctk.CTkScrollableFrame(
-            main, fg_color="transparent", corner_radius=0
-        )
-        self.scene_scroll.grid(row=3, column=0, sticky="nsew", pady=(0, 24))
-        main.grid_rowconfigure(3, weight=1)
+        # Scene List Scroll
+        self.scene_scroll = ctk.CTkScrollableFrame(self.main, fg_color="transparent", corner_radius=0)
+        self.scene_scroll.pack(fill="both", expand=True)
         self.scene_scroll.grid_columnconfigure(0, weight=1)
+
+        # Bottom Master Action
+        footer = ctk.CTkFrame(self.main, fg_color="transparent")
+        footer.pack(fill="x", pady=(20, 0))
+
+        self.folder_btn = ctk.CTkButton(
+            footer, text="Open Export Folder", width=180, height=52, corner_radius=15,
+            fg_color=CLR_SIDEBAR, border_width=1, border_color=CLR_BORDER,
+            command=self._open_output
+        )
+        self.folder_btn.pack(side="left")
+
+        self.render_btn = ctk.CTkButton(
+            footer, text="MASTER RENDER AUDIO", width=350, height=60, corner_radius=20,
+            fg_color=CLR_GLOW, hover_color="#2563EB", text_color="white",
+            font=ctk.CTkFont(size=16, weight="bold"),
+            command=self._generate
+        )
+        self.render_btn.pack(side="right")
 
         # Initial Scene
         self._add_scene()
 
-        # ── Section 3: Footer Controls ───────────────────────────────────────
-        footer = ctk.CTkFrame(main, fg_color=BG_PANEL, corner_radius=16, height=90, border_color=BORDER_COLOR, border_width=1)
-        footer.grid(row=4, column=0, sticky="ew")
-        footer.pack_propagate(False)
-
-        # Project Info
-        info_frame = ctk.CTkFrame(footer, fg_color="transparent")
-        info_frame.pack(side="left", padx=24)
-        
-        ctk.CTkLabel(info_frame, text="PROJECT NAME", font=ctk.CTkFont(size=10, weight="bold"), text_color=TEXT_DIM).pack(anchor="w")
-        self.proj_entry = ctk.CTkEntry(
-            info_frame, width=200, height=36, corner_radius=8,
-            fg_color=BG_CARD, border_width=1, border_color=BORDER_COLOR,
-            font=ctk.CTkFont(size=13)
-        )
-        self.proj_entry.pack(anchor="w", pady=(4, 0))
-        self.proj_entry.insert(0, "viral_promo_v1")
-
-        # Action Buttons
-        btn_frame = ctk.CTkFrame(footer, fg_color="transparent")
-        btn_frame.pack(side="right", padx=24)
-
-        self.folder_btn = ctk.CTkButton(
-            btn_frame, text="📁", width=44, height=44, corner_radius=12,
-            fg_color=BG_CARD, hover_color="#334155", font=ctk.CTkFont(size=18),
-            command=self._open_output
-        )
-        self.folder_btn.pack(side="left", padx=8)
-
-        self.gen_btn = ctk.CTkButton(
-            btn_frame, text="RENDER MASTER AUDIO", width=260, height=50, corner_radius=12,
-            fg_color=ACCENT_BLUE, hover_color="#2563EB",
-            font=ctk.CTkFont(family="Inter", size=14, weight="bold"),
-            command=self._generate
-        )
-        self.gen_btn.pack(side="left", padx=8)
-
-        # Progress / Status Bar
-        self.status_bar = ctk.CTkFrame(self, fg_color=BG_PANEL, height=30, corner_radius=0)
-        self.status_bar.pack(fill="x", side="bottom")
-
-        self.status_label = ctk.CTkLabel(self.status_bar, text="Ready", font=ctk.CTkFont(size=11), text_color=TEXT_DIM)
-        self.status_label.pack(side="left", padx=20)
-
-        self.progress_bar = ctk.CTkProgressBar(self.status_bar, width=300, height=6, fg_color=BG_CARD, progress_color=ACCENT_CYAN)
-        self.progress_bar.pack(side="right", padx=20, pady=12)
-        self.progress_bar.set(0)
-
-    # ── Helper: Gallery Items ────────────────────────────────────────────────
     def _add_gallery_item(self, name, cfg):
-        item = ctk.CTkFrame(self.voice_scroll, fg_color=BG_CARD, width=150, height=80, corner_radius=12, border_color=BORDER_COLOR, border_width=1)
-        item.pack(side="left", padx=8, pady=10)
+        item = ctk.CTkFrame(self.voice_scroll, fg_color=CLR_BG, width=160, height=90, corner_radius=15, border_color=CLR_BORDER, border_width=1)
+        item.pack(side="left", padx=10, pady=10)
         item.pack_propagate(False)
 
-        top = ctk.CTkFrame(item, fg_color="transparent")
-        top.pack(fill="x", padx=10, pady=(10, 0))
+        badge = ctk.CTkFrame(item, fg_color=cfg["color"], width=30, height=30, corner_radius=8)
+        badge.pack(side="left", padx=12)
+        ctk.CTkLabel(badge, text=cfg["icon"], font=ctk.CTkFont(size=14)).place(relx=0.5, rely=0.5, anchor="center")
 
-        ctk.CTkLabel(
-            top, text=name.split('_')[0].upper()[:10],
-            font=ctk.CTkFont(size=11, weight="bold"),
-            text_color=cfg["color"]
-        ).pack(side="left")
-
-        ctk.CTkButton(
-            top, text="🔊", width=24, height=24, corner_radius=12,
-            fg_color="transparent", hover_color="#334155", font=ctk.CTkFont(size=12),
+        content = ctk.CTkFrame(item, fg_color="transparent")
+        content.pack(side="left", fill="both", expand=True, pady=12)
+        
+        ctk.CTkLabel(content, text=name.split('_')[0].upper(), font=ctk.CTkFont(size=10, weight="bold"), text_color=TEXT_MAIN).pack(anchor="w")
+        
+        test_btn = ctk.CTkButton(
+            content, text="Test Preview", width=80, height=22, corner_radius=6,
+            fg_color=CLR_SIDEBAR, hover_color=cfg["color"], font=ctk.CTkFont(size=9),
             command=lambda n=name: self._test_voice(n)
-        ).pack(side="right")
+        )
+        test_btn.pack(anchor="w", pady=4)
 
-        # Description
-        ctk.CTkLabel(
-            item, text=cfg["desc"][:18] + "...",
-            font=ctk.CTkFont(size=9), text_color=TEXT_DIM
-        ).pack(padx=10, pady=(2, 0), anchor="w")
-
-    # ── Logic: AI & Tests ────────────────────────────────────────────────────
+    # ── Logic: Scripts & Render ──────────────────────────────────────────────
     def _test_voice(self, char):
-        self._set_status(f"Previewing '{char}' voice...")
         threading.Thread(target=self._run_voice_test, args=(char,), daemon=True).start()
 
     def _run_voice_test(self, char):
@@ -352,14 +325,12 @@ class PremiumVoiceApp(ctk.CTk):
             out_file = path / f"preview_{char}.wav"
             if generate_preview(char, str(out_file)):
                 winsound.PlaySound(str(out_file), winsound.SND_FILENAME | winsound.SND_ASYNC)
-        except Exception as e:
-            print(f"Preview error: {e}")
+        except: pass
 
     def _generate_ai_script(self):
         topic = self.ai_input.get().strip()
         if not topic: return
-        self.ai_btn.configure(state="disabled", text="Working...")
-        self._set_status(f"AI is drafting a masterpiece about '{topic}'...")
+        self.ai_btn.configure(state="disabled", text="✨ Writing...")
         threading.Thread(target=self._run_ollama, args=(topic,), daemon=True).start()
 
     def _run_ollama(self, topic):
@@ -369,7 +340,7 @@ class PremiumVoiceApp(ctk.CTk):
             self.after(0, self._apply_ai_script, data)
         except Exception as e:
             self.after(0, lambda: messagebox.showerror("AI Error", str(e)))
-            self.after(0, lambda: self.ai_btn.configure(state="normal", text="Generate"))
+        self.after(0, lambda: self.ai_btn.configure(state="normal", text="✨ Generate Script"))
 
     def _apply_ai_script(self, data):
         for r in self.scene_rows: r.destroy()
@@ -380,27 +351,25 @@ class PremiumVoiceApp(ctk.CTk):
             row = self._add_scene()
             row.char_var.set(scene.get("character", "narrator"))
             row.text_box.insert("1.0", scene.get("text", ""))
-        
-        self.ai_btn.configure(state="normal", text="Generate")
-        self._set_status(f"Script ready: {len(scenes)} scenes loaded.")
+        self.stat_scenes.configure(text=f"{len(scenes)} Scenes")
 
-    # ── Logic: Scene Management ──────────────────────────────────────────────
-    def _add_scene(self) -> SceneCard:
+    def _add_scene(self) -> UltimateSceneCard:
         scene_id = len(self.scene_rows) + 1
-        card = SceneCard(self.scene_scroll, scene_id=scene_id, on_delete=self._delete_scene)
-        card.grid(row=len(self.scene_rows), column=0, sticky="ew", padx=16, pady=8)
+        card = UltimateSceneCard(self.scene_scroll, scene_id=scene_id, on_delete=self._delete_scene)
+        card.grid(row=len(self.scene_rows), column=0, sticky="ew", padx=10, pady=10)
         self.scene_rows.append(card)
+        self.stat_scenes.configure(text=f"{len(self.scene_rows)} Scenes")
         return card
 
-    def _delete_scene(self, card: SceneCard):
+    def _delete_scene(self, card: UltimateSceneCard):
         if len(self.scene_rows) <= 1: return
         self.scene_rows.remove(card)
         card.destroy()
+        self.stat_scenes.configure(text=f"{len(self.scene_rows)} Scenes")
         for i, c in enumerate(self.scene_rows, 1):
             c.scene_id = i
-            c.id_label.configure(text=f"{i:02d}")
+            c.title_label.configure(text=f"SCENE {i:02d}")
 
-    # ── Logic: Generation ────────────────────────────────────────────────────
     def _generate(self):
         scenes = [r.get_data() for r in self.scene_rows if r.get_data()["text"]]
         if not scenes: return
@@ -415,19 +384,15 @@ class PremiumVoiceApp(ctk.CTk):
         with open(tmp_json, "w", encoding="utf-8") as f:
             json.dump(script_data, f, indent=2, ensure_ascii=False)
 
-        self.gen_btn.configure(state="disabled", text="RENDERING...")
+        self.render_btn.configure(state="disabled", text="RENDERING...")
         self.progress_bar.set(0)
-        
         threading.Thread(target=self._run_render, args=(str(tmp_json),), daemon=True).start()
 
     def _run_render(self, json_path: str):
         try:
             from super_voice_tool import process_json_file
-            
             def cb(curr, total, sid, char, status):
                 self.after(0, lambda: self.progress_bar.set(curr/total))
-                self.after(0, lambda: self._set_status(f"Rendering {char}... [{curr}/{total}]"))
-                # Note: Card status update logic can be added here if needed
                 if 0 <= sid-1 < len(self.scene_rows):
                     p = f"G:/Voice generation tool/audio_output/{self.current_project}/scene_{sid}.wav"
                     self.after(0, lambda: self.scene_rows[sid-1].set_status(status, p))
@@ -436,15 +401,11 @@ class PremiumVoiceApp(ctk.CTk):
             self.after(0, self._on_render_done, summary)
         except Exception as e:
             self.after(0, lambda: messagebox.showerror("Render Error", str(e)))
-            self.after(0, lambda: self.gen_btn.configure(state="normal", text="RENDER MASTER AUDIO"))
+            self.after(0, lambda: self.render_btn.configure(state="normal", text="MASTER RENDER AUDIO"))
 
     def _on_render_done(self, summary):
-        self.gen_btn.configure(state="normal", text="RENDER MASTER AUDIO")
-        self._set_status(f"Render Complete: {summary['success_count']} files exported.")
-        messagebox.showinfo("ZAS Vocalize", "Project exported successfully!")
-
-    def _set_status(self, msg: str):
-        self.status_label.configure(text=msg)
+        self.render_btn.configure(state="normal", text="MASTER RENDER AUDIO")
+        messagebox.showinfo("ZAS Vocalize Ultimate", f"Project exported successfully!\n({summary['success_count']} scenes)")
 
     def _open_output(self):
         path = f"G:/Voice generation tool/audio_output/{self.proj_entry.get().strip()}"
@@ -452,5 +413,5 @@ class PremiumVoiceApp(ctk.CTk):
         else: os.startfile("G:/Voice generation tool/audio_output")
 
 if __name__ == "__main__":
-    app = PremiumVoiceApp()
+    app = UltimateVocalizeApp()
     app.mainloop()
